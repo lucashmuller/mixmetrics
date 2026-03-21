@@ -206,6 +206,14 @@ with home_tab:
             utility_damage=("utility_damage", "mean"),
             entry_count=("entry_count", "mean"),
             entry_wins=("entry_wins", "mean"),
+            enemy5ks=("enemy5ks", "mean"),
+            enemy4ks=("enemy4ks", "mean"),
+            enemy3ks=("enemy3ks", "mean"),
+            enemy2ks=("enemy2ks", "mean"),
+            v1_wins=("v1_wins", "mean"),
+            v2_wins=("v2_wins", "mean"),
+            kill_reward=("kill_reward", "mean"),
+            cash_earned=("cash_earned", "mean"),
         )
         .reset_index()
     )
@@ -219,13 +227,24 @@ with home_tab:
     avg["Avg Util Damage"] = avg["utility_damage"].round(1)
     avg["Avg Entries"] = avg["entry_count"].round(1)
     avg["Avg Entry Wins"] = avg["entry_wins"].round(1)
+    avg["Avg 5K"] = avg["enemy5ks"].round(2)
+    avg["Avg 4K"] = avg["enemy4ks"].round(2)
+    avg["Avg 3K"] = avg["enemy3ks"].round(2)
+    avg["Avg 2K"] = avg["enemy2ks"].round(2)
+    avg["Avg 1v1 Wins"] = avg["v1_wins"].round(2)
+    avg["Avg 1v2 Wins"] = avg["v2_wins"].round(2)
+    avg["Avg Kill Reward"] = avg["kill_reward"].round(0).astype(int)
+    avg["Avg Cash Earned"] = avg["cash_earned"].round(0).astype(int)
     avg = avg.sort_values("kills", ascending=False).reset_index(drop=True)
     avg.index += 1
 
     st.dataframe(
         avg[["display_name", "matches", "Avg Kills", "Avg Deaths", "Avg K/D",
              "Avg HS%", "Avg Damage", "Avg Assists", "Avg Flash Assists",
-             "Avg Util Damage", "Avg Entries", "Avg Entry Wins"]]
+             "Avg Util Damage", "Avg Entries", "Avg Entry Wins",
+             "Avg 5K", "Avg 4K", "Avg 3K", "Avg 2K",
+             "Avg 1v1 Wins", "Avg 1v2 Wins",
+             "Avg Kill Reward", "Avg Cash Earned"]]
         .rename(columns={"display_name": "player"}),
         use_container_width=True,
     )
