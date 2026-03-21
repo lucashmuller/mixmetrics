@@ -190,6 +190,48 @@ with home_tab:
 
     st.divider()
 
+    # ── Mean stats per player ─────────────────────────────────────────────────
+    st.subheader("📊 Average stats per player")
+
+    avg = (
+        df_home.groupby("display_name")
+        .agg(
+            matches=("matchid", "nunique"),
+            kills=("kills", "mean"),
+            deaths=("deaths", "mean"),
+            damage=("damage", "mean"),
+            hs_kills=("head_shot_kills", "mean"),
+            assists=("assists", "mean"),
+            flash_successes=("flash_successes", "mean"),
+            utility_damage=("utility_damage", "mean"),
+            entry_count=("entry_count", "mean"),
+            entry_wins=("entry_wins", "mean"),
+        )
+        .reset_index()
+    )
+    avg["Avg Kills"] = avg["kills"].round(1)
+    avg["Avg Deaths"] = avg["deaths"].round(1)
+    avg["Avg K/D"] = (avg["kills"] / avg["deaths"].replace(0, 1)).round(2)
+    avg["Avg Damage"] = avg["damage"].round(0).astype(int)
+    avg["Avg HS%"] = ((avg["hs_kills"] / avg["kills"].replace(0, 1)) * 100).round(1)
+    avg["Avg Assists"] = avg["assists"].round(1)
+    avg["Avg Flash Assists"] = avg["flash_successes"].round(1)
+    avg["Avg Util Damage"] = avg["utility_damage"].round(1)
+    avg["Avg Entries"] = avg["entry_count"].round(1)
+    avg["Avg Entry Wins"] = avg["entry_wins"].round(1)
+    avg = avg.sort_values("kills", ascending=False).reset_index(drop=True)
+    avg.index += 1
+
+    st.dataframe(
+        avg[["display_name", "matches", "Avg Kills", "Avg Deaths", "Avg K/D",
+             "Avg HS%", "Avg Damage", "Avg Assists", "Avg Flash Assists",
+             "Avg Util Damage", "Avg Entries", "Avg Entry Wins"]]
+        .rename(columns={"display_name": "player"}),
+        use_container_width=True,
+    )
+
+    st.divider()
+
     # ── Recent matches ─────────────────────────────────────────────────────────
     st.subheader("🗓️ Recent matches")
     recent = (
