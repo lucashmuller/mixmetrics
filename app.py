@@ -210,7 +210,9 @@ with home_tab:
             enemy4ks=("enemy4ks", "mean"),
             enemy3ks=("enemy3ks", "mean"),
             enemy2ks=("enemy2ks", "mean"),
+            v1_count=("v1_count", "mean"),
             v1_wins=("v1_wins", "mean"),
+            v2_count=("v2_count", "mean"),
             v2_wins=("v2_wins", "mean"),
             kill_reward=("kill_reward", "mean"),
             cash_earned=("cash_earned", "mean"),
@@ -231,7 +233,9 @@ with home_tab:
     avg["Avg 4K"] = avg["enemy4ks"].round(2)
     avg["Avg 3K"] = avg["enemy3ks"].round(2)
     avg["Avg 2K"] = avg["enemy2ks"].round(2)
+    avg["Avg 1v1"] = avg["v1_count"].round(2)
     avg["Avg 1v1 Wins"] = avg["v1_wins"].round(2)
+    avg["Avg 1v2"] = avg["v2_count"].round(2)
     avg["Avg 1v2 Wins"] = avg["v2_wins"].round(2)
     avg["Avg Kill Reward"] = avg["kill_reward"].round(0).astype(int)
     avg["Avg Cash Earned"] = avg["cash_earned"].round(0).astype(int)
@@ -243,7 +247,7 @@ with home_tab:
              "Avg HS%", "Avg Damage", "Avg Assists", "Avg Flash Assists",
              "Avg Util Damage", "Avg Entries", "Avg Entry Wins",
              "Avg 5K", "Avg 4K", "Avg 3K", "Avg 2K",
-             "Avg 1v1 Wins", "Avg 1v2 Wins",
+             "Avg 1v1", "Avg 1v1 Wins", "Avg 1v2", "Avg 1v2 Wins",
              "Avg Kill Reward", "Avg Cash Earned"]]
         .rename(columns={"display_name": "player"}),
         use_container_width=True,
