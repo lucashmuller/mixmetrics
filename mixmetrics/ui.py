@@ -154,7 +154,14 @@ def stat_card(column, label, value, detail=None):
     column.metric(label, value, detail)
 
 
-def dataframe(data, *, column_config=None, column_order=None, height="content"):
+def dataframe(
+    data,
+    *,
+    column_config=None,
+    column_order=None,
+    height="content",
+    container=None,
+):
     kwargs = {
         "data": data,
         "width": "stretch",
@@ -166,7 +173,8 @@ def dataframe(data, *, column_config=None, column_order=None, height="content"):
     if column_order is not None:
         kwargs["column_order"] = column_order
 
-    st.dataframe(**kwargs)
+    target = container if container is not None else st
+    target.dataframe(**kwargs)
 
 
 def default_column_config():

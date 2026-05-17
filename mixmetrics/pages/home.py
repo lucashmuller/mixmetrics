@@ -2,10 +2,12 @@ import streamlit as st
 
 from mixmetrics.data import (
     clear_match_days_cache,
+    clear_map_scores_cache,
     clear_players_cache,
     clear_stats_cache,
     clear_team_overrides_cache,
     load_match_days,
+    load_map_scores,
     load_players,
     load_stats,
     load_team_overrides,
@@ -28,6 +30,7 @@ def render_home():
     df_home = load_stats()
     name_map_home = load_players()
     match_days = load_match_days()
+    map_scores = load_map_scores()
 
     if df_home.empty:
         st.info("No data yet. Ask an admin to upload the first match CSV.")
@@ -122,7 +125,22 @@ def render_home():
                         axis=1,
                     )
                     map_name = df_map["map_name"].iloc[0]
-                    st.markdown(f"**Map {mid} - {map_name}**")
+                    score = map_scores.get(int(mid))
+                    score_label = ""
+                    if score:
+                        score_team1 = overrides_home.get(
+                            (int(mid), score["team1_name"]),
+                            score["team1_name"],
+                        )
+                        score_team2 = overrides_home.get(
+                            (int(mid), score["team2_name"]),
+                            score["team2_name"],
+                        )
+                        score_label = (
+                            f" - {score_team1} {score['team1_score']}x"
+                            f"{score['team2_score']} {score_team2}"
+                        )
+                    st.markdown(f"**Map {mid} - {map_name}{score_label}**")
                     df_map = df_map.sort_values("kills", ascending=False)
                     dataframe(
                         df_map[
@@ -262,4 +280,5 @@ def render_home():
         clear_players_cache()
         clear_team_overrides_cache()
         clear_match_days_cache()
+        clear_map_scores_cache()
         st.rerun()

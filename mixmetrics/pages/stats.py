@@ -2,9 +2,11 @@ import streamlit as st
 
 from mixmetrics.data import (
     clear_players_cache,
+    clear_map_scores_cache,
     clear_stats_cache,
     clear_team_overrides_cache,
     load_players,
+    load_map_scores,
     load_stats,
     load_team_overrides,
 )
@@ -29,7 +31,9 @@ def render_match_stats():
         return
 
     df_all = add_player_display_names(df_all, load_players())
-    df_all = add_team_display_names(df_all, load_team_overrides())
+    team_overrides = load_team_overrides()
+    df_all = add_team_display_names(df_all, team_overrides)
+    map_scores = load_map_scores()
 
     section_title("Filters")
     col1, col2 = st.columns([1.2, 1])
@@ -59,10 +63,25 @@ def render_match_stats():
 
     df_match = add_basic_rates(df_match)
     map_name = df_match["map_name"].iloc[0] if not df_match.empty else "Selected map"
+    map_score = map_scores.get(int(selected_matchid))
+    score_label = "Not set"
+    if map_score:
+        team1_name = team_overrides.get(
+            (int(selected_matchid), map_score["team1_name"]),
+            map_score["team1_name"],
+        )
+        team2_name = team_overrides.get(
+            (int(selected_matchid), map_score["team2_name"]),
+            map_score["team2_name"],
+        )
+        score_label = (
+            f"{team1_name} {map_score['team1_score']}x"
+            f"{map_score['team2_score']} {team2_name}"
+        )
     stat_cols = st.columns(5)
     stat_card(stat_cols[0], "Map", map_name)
-    stat_card(stat_cols[1], "Players", df_match["steamid64"].nunique())
-    stat_card(stat_cols[2], "Total kills", int(df_match["kills"].sum()))
+    stat_card(stat_cols[1], "Score", score_label)
+    stat_card(stat_cols[2], "Players", df_match["steamid64"].nunique())
     stat_card(stat_cols[3], "Top K-D", df_match.sort_values(["K-D", "kills"], ascending=False)["display_name"].iloc[0])
     stat_card(stat_cols[4], "Top DMG", df_match.sort_values("damage", ascending=False)["display_name"].iloc[0])
 
@@ -120,4 +139,5 @@ def render_match_stats():
         clear_stats_cache()
         clear_players_cache()
         clear_team_overrides_cache()
+        clear_map_scores_cache()
         st.rerun()

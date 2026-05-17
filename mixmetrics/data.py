@@ -61,6 +61,15 @@ def load_vetoes(match_day_id):
     return result.data or []
 
 
+@st.cache_data(ttl=30)
+def load_map_scores():
+    result = get_supabase().table("map_scores").select("*").execute()
+    return {
+        int(row["matchid"]): row
+        for row in (result.data or [])
+    }
+
+
 def clear_stats_cache():
     load_stats.clear()
 
@@ -79,3 +88,7 @@ def clear_match_days_cache():
 
 def clear_vetoes_cache():
     load_vetoes.clear()
+
+
+def clear_map_scores_cache():
+    load_map_scores.clear()

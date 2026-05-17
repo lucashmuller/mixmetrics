@@ -3,8 +3,10 @@ import streamlit as st
 
 from mixmetrics.data import (
     clear_match_days_cache,
+    clear_map_scores_cache,
     clear_team_overrides_cache,
     clear_vetoes_cache,
+    load_map_scores,
     load_match_days,
     load_stats,
     load_team_overrides,
@@ -16,6 +18,7 @@ from mixmetrics.repository import (
     delete_veto,
     replace_match_day_maps,
     update_match_day,
+    upsert_map_score,
     upsert_team_override,
     upsert_veto,
 )
@@ -56,6 +59,8 @@ def render_match_days():
     _render_create_match_day(all_matchids, match_labels)
     st.divider()
     _render_existing_match_days(all_matchids, match_labels)
+    st.divider()
+    _render_map_scores_editor(df_days)
     st.divider()
     _render_team_overrides(df_days)
 
@@ -305,6 +310,62 @@ def _render_delete_match_day(day):
     _clear_match_day_related_caches()
     st.success("Match day deleted.")
     st.rerun()
+
+
+def _render_map_scores_editor(df_days):
+    section_title(
+        "Map Scores",
+        "Edit the round score saved during upload for each map.",
+    )
+    map_scores = load_map_scores()
+    maps = (
+        df_days[["matchid", "map_name", "team"]]
+        .drop_duplicates()
+        .sort_values(["matchid", "team"])
+    )
+
+    for matchid, group in maps.groupby("matchid"):
+        teams = sorted(group["team"].dropna().unique().tolist())
+        if len(teams) != 2:
+            with st.expander(f"Match {matchid} - {group['map_name'].iloc[0]}"):
+                st.warning("This map does not have exactly two teams, so score editing is disabled.")
+            continue
+
+        current = map_scores.get(int(matchid), {})
+        team1_name = current.get("team1_name") or teams[0]
+        team2_name = current.get("team2_name") or teams[1]
+        with st.expander(f"Match {matchid} - {group['map_name'].iloc[0]}"):
+            with st.form(f"map_score_{matchid}", clear_on_submit=False):
+                col1, col2 = st.columns(2)
+                team1_score = col1.number_input(
+                    f"{team1_name} rounds",
+                    min_value=0,
+                    max_value=99,
+                    value=int(current.get("team1_score") or 0),
+                )
+                team2_score = col2.number_input(
+                    f"{team2_name} rounds",
+                    min_value=0,
+                    max_value=99,
+                    value=int(current.get("team2_score") or 0),
+                )
+                submitted = st.form_submit_button("Save map score")
+
+            if not submitted:
+                continue
+
+            upsert_map_score(
+                {
+                    "matchid": int(matchid),
+                    "team1_name": team1_name,
+                    "team2_name": team2_name,
+                    "team1_score": int(team1_score),
+                    "team2_score": int(team2_score),
+                }
+            )
+            clear_map_scores_cache()
+            st.success("Map score saved.")
+            st.rerun()
 
 
 def _render_team_overrides(df_days):

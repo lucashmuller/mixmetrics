@@ -62,6 +62,10 @@ def upsert_match_stats(rows):
     )
 
 
+def upsert_map_score(score_row):
+    return get_supabase().table("map_scores").upsert(score_row).execute()
+
+
 def upsert_player_name(steamid64, display_name):
     return (
         get_supabase()

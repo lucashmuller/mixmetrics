@@ -2,11 +2,13 @@ import streamlit as st
 
 from mixmetrics.data import (
     clear_match_days_cache,
+    clear_map_scores_cache,
     clear_players_cache,
     clear_stats_cache,
     clear_team_overrides_cache,
     clear_vetoes_cache,
     load_match_days,
+    load_map_scores,
     load_players,
     load_stats,
     load_team_overrides,
@@ -40,6 +42,7 @@ def render_series():
     overrides = load_team_overrides()
     df_series = add_player_display_names(df_series, name_map)
     df_series = add_team_display_names(df_series, overrides)
+    map_scores = load_map_scores()
 
     sorted_days = sorted(
         days_with_maps,
@@ -113,7 +116,22 @@ def render_series():
 
         map_name = df_map["map_name"].iloc[0]
         winner_label = f"Winner: **{winner}**" if winner else "_Winner not set_"
-        st.markdown(f"#### Map {index} - {map_name} - {winner_label}")
+        score = map_scores.get(int(mid))
+        score_label = ""
+        if score:
+            score_team1 = overrides.get(
+                (int(mid), score["team1_name"]),
+                score["team1_name"],
+            )
+            score_team2 = overrides.get(
+                (int(mid), score["team2_name"]),
+                score["team2_name"],
+            )
+            score_label = (
+                f" - {score_team1} {score['team1_score']}x"
+                f"{score['team2_score']} {score_team2}"
+            )
+        st.markdown(f"#### Map {index} - {map_name}{score_label} - {winner_label}")
 
         teams_in_map = sorted(df_map["team_display"].unique().tolist())
         team_cols = st.columns(len(teams_in_map))
@@ -136,6 +154,7 @@ def render_series():
                     ]
                 ].rename(columns={"display_name": "player"}),
                 column_config=default_column_config(),
+                container=col,
             )
         st.divider()
 
@@ -193,5 +212,6 @@ def render_series():
         clear_players_cache()
         clear_team_overrides_cache()
         clear_match_days_cache()
+        clear_map_scores_cache()
         clear_vetoes_cache()
         st.rerun()
